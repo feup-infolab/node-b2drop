@@ -28,13 +28,19 @@
   "homepage": "https://github.com/feup-infolab/node-b2drop#readme",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
+    "md5-file": "^3.2.3",
+    "mkdirp": "^0.5.1",
+    "path": "^0.12.7",
     "querystring": "^0.2.0",
     "request": "^2.83.0",
+    "rimraf": "^2.6.2",
     "underscore": "^1.8.3",
     "webdav": "^1.1.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "chai-http": "^3.0.0"
+    "chai-http": "^3.0.0",
+    "mocha": "^4.0.1",
+    "uuid": "^3.1.0"
   }
 }

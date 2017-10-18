@@ -3,11 +3,31 @@ request = request.defaults({jar: true});
 const cheerio = require('cheerio');
 const qs = require('querystring');
 
-const isNull = require(Pathfinder.absPathInSrcFolder("/util.js")).isNull;
+function isNull(object)
+{
+    if(object === null)
+    {
+        return true;
+    }
+    else
+    {
+        if(typeof object === "undefined")
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
+
 const createClient = require("webdav");
 
 //DEBUG OPTION
 //require('request').debug = true
+
+
 
 const Uri = {
     loginUri: 'https://b2drop.eudat.eu/login',
@@ -23,7 +43,6 @@ function B2Drop(username, password)
     self.username = username;
     self.password = password;
     self.cookie = request.jar();
-
 };
 
 B2Drop.prototype.login = function (callback) {
@@ -103,7 +122,7 @@ B2Drop.prototype.changeFolderSetting = function (folderUri, folderID, setting, c
                     return callback(null, response);
                 });
         });
-}
+};
 
 B2Drop.prototype.getShareLink = function (folderUri, password, callback) {
     let self = this;
@@ -147,7 +166,7 @@ B2Drop.prototype.getShareLink = function (folderUri, password, callback) {
                     }
                 },
                 function (error, response, body) {
-                    if (!isNull(error) || (response && response.statusCode != 200))
+                    if (!isNull(error) || (response && response.statusCode !== 200))
                     {
                         return callback(error, response, null)
                     }
@@ -158,7 +177,7 @@ B2Drop.prototype.getShareLink = function (folderUri, password, callback) {
                         const folderID = info.ocs.data[0].id;
 
                         self.changeFolderSetting(folderUri, folderID, {permissions: '15'}, function (err, response) {
-                            if (!isNull(error) || (response && response.statusCode != 200))
+                            if (!isNull(error) || (response && response.statusCode !== 200))
                             {
                                 return callback(error, response, url)
                             }
@@ -219,7 +238,6 @@ B2Drop.prototype.initiateWebDavShareLink = function (sharelink, password, callba
 
 B2Drop.prototype.getDirectoryContents = function (folderPath, callback) {
 
-
     let self = this;
 
 
@@ -247,46 +265,38 @@ B2Drop.prototype.getDirectoryContents = function (folderPath, callback) {
 B2Drop.prototype.put = function (fileUri, inputStream, callback) {
     let self = this;
 
-    self.connection.putFileContents(fileUri, inputStream,
+    const outputStream = self.connection.createWriteStream(fileUri,
         {
             headers: {
                 jar: self.cookie,
-                requesttoken: self.requesttokenShareLink,
-                auth: "Basic" + self.authentication,
-                overwrite: "true",
+                requesttoken: self.requesttokenShareLink
             }
-        })
-        .then(function (value) {
-            // sucesso
-            console.log("succ");
-            return callback(null, value);
-        }, function (motive) {
-            // rejeitada
-            console.log(motive);
-            return callback(1, motive);
         });
-}
+
+    outputStream.on("finish", function(){
+        callback(null);
+    });
+
+    outputStream.on("error", function(){
+        callback("Error sending file to " + fileUri);
+    });
+
+    inputStream.pipe(outputStream);
+};
 
 B2Drop.prototype.get = function (fileUri, callback) {
     const self = this;
 
-    self.connection
-        .getFileStream(fileUri,
+    const stream = self.connection.createReadStream(fileUri,
             {
                 headers: {
                     jar: self.cookie,
-                    requesttoken: self.requesttokenShareLink,
-                    auth: "Basic" + self.authentication,
-                    overwrite: "true"
+                    requesttoken: self.requesttokenShareLink
                 }
             }
-        )
-        .then(function (outputStream) {
-            return callback(null, outputStream);
-        }, function (error) {
-            return callback(error, null);
-        })
+        );
 
+    return callback(null, stream);
 }
 
 B2Drop.prototype.delete = function (fileUri, callback) {

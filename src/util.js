@@ -1,4 +1,4 @@
-function isNull(object)
+module.exports.isNull = function(object)
 {
     if(object === null)
     {
@@ -17,4 +17,9 @@ function isNull(object)
     }
 }
 
-module.exports.isNull = isNull;
+module.exports.pathInApp = function(filePath)
+{
+    const path = require("path");
+    return path.join(path.resolve(__dirname, ".."), filePath)
+};
+

@@ -1,26 +1,31 @@
+global.util = require("../src/util");
+
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const should = chai.should();
 const _ = require("underscore");
 chai.use(chaiHttp);
 
-const Pathfinder = global.Pathfinder;
-var fs = require("fs");
+const fs = require("fs");
 
-const b2drop = require(Pathfinder.absPathInSrcFolder("/kb/B2Drop.js")).B2Drop;
-const b2dropAccount = require(Pathfinder.absPathInTestsFolder("/mockdata/accounts/b2DropAccount.js"));
-const testFile = require(Pathfinder.absPathInTestsFolder("mockdata/files/pngMockFile.js"));
+const b2drop = require(util.pathInApp("src/B2Drop.js")).B2Drop;
+const b2dropAccount = require(util.pathInApp(("test/mockData/account/b2DropAccount.js")));
+const testFile = require(util.pathInApp(("test/mockData/files/docMockFile.js")));
 
 //b2DropTestFolderUnit vars
 const testPathFolder1 = '/teste1';
-const testPathFolder2 = "/teste2";
 const invalidPasswordFolder = "gg";
 const passwordFolder = "ananasManga1234Alfragide";
-const shareLink = "https://b2drop.eudat.eu/s/PwzBCH3iSfGP6Mb";
+const shareLink = "https://b2drop.eudat.eu/s/ui6aneS9aORbSzV";
 
-const compareFiles = function(fileA, fileB)
+const filesAreEqual = function(fileA, fileB)
 {
+    const md5File = require("md5-file");
 
+    const md5FileA = md5File.sync(fileA);
+    const md5FileB = md5File.sync(fileB);
+
+    return md5FileA === md5FileB;
 }
 
 describe("[B2Drop]", function (done) {
@@ -69,12 +74,12 @@ describe("[B2Drop]", function (done) {
 
             var inputStream = fs.createReadStream(testFile.location);
 
-            inputStream.on('readable', function () {
+            inputStream.on('open', function () {
                 var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
                 account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
                     res.should.have.property('statusCode', 303);
-                    account.put(fileUri, inputStream, function (err, res) {
-                        res.should.have.status(204);
+                    account.put(fileUri, inputStream, function (err) {
+                        should.not.exist(err);
                         inputStream.close();
                         done();
                     });
@@ -82,36 +87,46 @@ describe("[B2Drop]", function (done) {
             });
         });
     });
+
     describe("[Download file]", function () {
-        it("Should get succesfully test file", function (done) {
+        it("Should get successfully test file", function (done) {
             var account = new b2drop();
-            var fileUri = testPathFolder2 + "/" + testFile.name;
-            var outputStream = fs.createWriteStream(testFile.location);
+            var fileUri = "/" + testFile.name;
+            var outputStream = fs.createWriteStream(testFile.download_location);
             account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
                 should.not.exist(err);
                 res.should.have.property('statusCode', 303);
                 account.get(fileUri, function (err, inputStream) {
                     should.not.exist(err);
+                    should.exist(inputStream);
 
                     outputStream.on('finish', function(){
-                        done();
+                        const allOk = filesAreEqual(testFile.location, testFile.download_location);
+                        if(allOk)
+                        {
+                            done();
+                        }
+                        else
+                        {
+                            done("Downloaded file is not equal to mock file. Corrupted transfer?");
+                        }
                     });
 
                     outputStream.on('error', function(){
                         done("Failed to pipe file from cloud server.");
                     });
 
-                    should.exist(outputStream);
                     inputStream.pipe(outputStream);
                 });
             });
         });
     });
+
     //TODO fileURI
     describe("[Delete file]", function () {
         it("Should delete succesfully test file", function (done) {
             var account = new b2drop();
-            var fileUri = testPathFolder2 + "/" + testFile.name;
+            var fileUri = "/" + testFile.name;
             account.delete(shareLink, passwordFolder, fileUri, function (err, res) {
                 res.should.have.status(200);
                 done();
