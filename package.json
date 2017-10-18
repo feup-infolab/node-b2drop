@@ -1,0 +1,40 @@
+{
+  "name": "node-b2drop",
+  "version": "0.0.1",
+  "description": "A B2Drop client for NodeJS",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/feup-infolab/node-b2drop.git"
+  },
+  "keywords": [
+    "b2drop",
+    "cloud",
+    "storage",
+    "client",
+    "nodejs"
+  ],
+  "author": "FEUP Infolab",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/feup-infolab/node-b2drop/issues"
+  },
+  "homepage": "https://github.com/feup-infolab/node-b2drop#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "querystring": "^0.2.0",
+    "request": "^2.83.0",
+    "underscore": "^1.8.3",
+    "webdav": "^1.1.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-http": "^3.0.0"
+  }
+}
