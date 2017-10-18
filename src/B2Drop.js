@@ -3,13 +3,11 @@ request = request.defaults({jar: true});
 const cheerio = require('cheerio');
 const qs = require('querystring');
 
-const isNull = require(Pathfinder.absPathInSrcFolder("/utils/null.js")).isNull;
+const isNull = require(Pathfinder.absPathInSrcFolder("/util.js")).isNull;
 const createClient = require("webdav");
 
 //DEBUG OPTION
 //require('request').debug = true
-
-//TO CHECK HTTP ERROR  error.status
 
 const Uri = {
     loginUri: 'https://b2drop.eudat.eu/login',
@@ -20,7 +18,6 @@ const Uri = {
 
 function B2Drop(username, password)
 {
-
     let self = this;
 
     self.username = username;
