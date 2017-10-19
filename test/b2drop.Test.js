@@ -4,6 +4,7 @@ const chai = require("chai");
 const chaiHttp = require("chai-http");
 const should = chai.should();
 const _ = require("underscore");
+const uuid = require("uuid");
 chai.use(chaiHttp);
 
 const fs = require("fs");
@@ -14,6 +15,7 @@ const testFile = require(util.pathInApp(("test/mockData/files/docMockFile.js")))
 
 //b2DropTestFolderUnit vars
 const testPathFolder1 = '/teste1';
+const dummyFolderPath = testPathFolder1 + "/dummy_folder" + uuid.v4();
 const invalidPasswordFolder = "gg";
 const passwordFolder = "ananasManga1234Alfragide";
 const shareLink = "https://b2drop.eudat.eu/s/ui6aneS9aORbSzV";
@@ -127,9 +129,13 @@ describe("[B2Drop]", function (done) {
         it("Should delete succesfully test file", function (done) {
             var account = new b2drop();
             var fileUri = "/" + testFile.name;
-            account.delete(shareLink, passwordFolder, fileUri, function (err, res) {
-                res.should.have.status(200);
-                done();
+            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
+                should.not.exist(err);
+                res.should.have.property('statusCode', 303);
+                account.delete(shareLink, passwordFolder, fileUri, function (err, res) {
+                    res.should.have.status(200);
+                    done();
+                });
             });
         });
 
@@ -138,9 +144,14 @@ describe("[B2Drop]", function (done) {
     describe("[Create Folder]", function () {
         it("Should  succesfully create folder", function (done) {
             var account = new b2drop();
-            account.createFolder(shareLink, passwordFolder, folderUri, function (err, res) {
-                res.should.have.status(200);
-                done();
+            var fileUri = dummyFolderPath;
+            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
+                should.not.exist(err);
+                res.should.have.property('statusCode', 303);
+                account.createFolder(folderUri, passwordFolder, , function (err, res) {
+                    res.should.have.status(200);
+                    done();
+                });
             });
         });
     });

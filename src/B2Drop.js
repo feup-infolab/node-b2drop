@@ -301,23 +301,35 @@ B2Drop.prototype.get = function (fileUri, callback) {
 
 B2Drop.prototype.delete = function (fileUri, callback) {
     const self = this;
-    self.connection.delete(fileUri, {
+    self.connection.deleteFile(fileUri, {
         headers: {
             jar: self.cookie,
-            requesttoken: self.requesttokenShareLink,
-            auth: "Basic" + self.authentication,
-            overwrite: "true"
+            requesttoken: self.requesttokenShareLink
         }
-    })
-        .then(function (value) {
-            // sucesso
-            console.log("succ");
-            return callback(null, value);
-        }, function (motive) {
-            // rejeitada
-            console.log(motive);
-            return callback(1, motive);
-        });
+    }).then(function (value) {
+        // sucesso
+        console.log("succ");
+        return callback(null, value);
+    }, function (motive) {
+        // rejeitada
+        console.log(motive);
+        return callback(1, motive);
+    });
+}
+
+B2Drop.prototype.createFolder = function (folderUri, callback) {
+    const self = this;
+
+    const stream = self.connection.createReadStream(fileUri,
+        {
+            headers: {
+                jar: self.cookie,
+                requesttoken: self.requesttokenShareLink
+            }
+        }
+    );
+
+    return callback(null, stream);
 }
 
 
