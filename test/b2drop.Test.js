@@ -124,7 +124,6 @@ describe("[B2Drop]", function (done) {
         });
     });
 
-    //TODO fileURI
     describe("[Delete file]", function () {
         it("Should delete succesfully test file", function (done) {
             var account = new b2drop();
@@ -132,8 +131,9 @@ describe("[B2Drop]", function (done) {
             account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
                 should.not.exist(err);
                 res.should.have.property('statusCode', 303);
-                account.delete(shareLink, passwordFolder, fileUri, function (err, res) {
-                    res.should.have.status(200);
+                account.delete(fileUri, function (err, res) {
+                    should.not.exist(err);
+                    res.should.have.status(204);
                     done();
                 });
             });
@@ -148,7 +148,7 @@ describe("[B2Drop]", function (done) {
             account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
                 should.not.exist(err);
                 res.should.have.property('statusCode', 303);
-                account.createFolder(folderUri, passwordFolder, , function (err, res) {
+                account.createFolder(folderUri, passwordFolder, function (err, res) {
                     res.should.have.status(200);
                     done();
                 });
@@ -171,16 +171,7 @@ describe("[B2Drop]", function (done) {
 
         });
     });
-        /*
-                    describe("[Delete Folder]" , function() {
-                        it("Should  succesfully delete folder", function (done) {
-                            var account = new b2drop();
-                            account.deleteFolder(shareLink,passwordFolder,folderUri, function(err, res) {
-                                res.should.have.status(200);
-                                done();
-                            });
-                        });
-                    });*/
+
     after(function (done) {
         done();
     });

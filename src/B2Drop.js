@@ -301,20 +301,17 @@ B2Drop.prototype.get = function (fileUri, callback) {
 
 B2Drop.prototype.delete = function (fileUri, callback) {
     const self = this;
+
     self.connection.deleteFile(fileUri, {
         headers: {
             jar: self.cookie,
             requesttoken: self.requesttokenShareLink
         }
-    }).then(function (value) {
-        // sucesso
-        console.log("succ");
-        return callback(null, value);
-    }, function (motive) {
-        // rejeitada
-        console.log(motive);
-        return callback(1, motive);
-    });
+    }).then(function(resp) {
+        return callback(null, resp);
+    }, function (err) {
+        return callback(err,null);
+    })
 }
 
 B2Drop.prototype.createFolder = function (folderUri, callback) {
