@@ -143,21 +143,22 @@ describe("[B2Drop]", function (done) {
             var folderUri = dummyFolderPath;
             account.initiateWebDavPrivate();
             account.createFolderPrivateArea(folderUri, function (err, res) {
-                res.should.have.status(200);
+                should.not.exist(err);
+                res.should.have.status(201);
                 done();
             });
         });
-    });
 
-    it("Should  succesfully create folder in shared area", function (done) {
-        var account = new b2drop();
-        var folderUri = dummyFolderPath;
-        account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
-            should.not.exist(err);
-            res.should.have.property('statusCode', 303);
-            account.createFolder(folderUri, passwordFolder, function (err, res) {
-                res.should.have.status(200);
-                done();
+        it("Should  succesfully create folder in shared area", function (done) {
+            var account = new b2drop();
+            var folderUri = dummyFolderPath;
+            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
+                should.not.exist(err);
+                res.should.have.property('statusCode', 303);
+                account.createFolderSharedArea(folderUri, passwordFolder, function (err, res) {
+                    res.should.have.status(201);
+                    done();
+                });
             });
         });
     });

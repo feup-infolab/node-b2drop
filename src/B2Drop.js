@@ -33,7 +33,8 @@ const Uri = {
     loginUri: 'https://b2drop.eudat.eu/login',
     logoutUri: 'https://b2drop.eudat.eu/logout',
     shareLinkRequest: 'https://b2drop.eudat.eu/ocs/v2.php/apps/files_sharing/api/v1/shares',
-    webdavUri: 'https://b2drop.eudat.eu/public.php/webdav'
+    webdavShareUri: 'https://b2drop.eudat.eu/public.php/webdav',
+    webdavPrivateUri: 'https://b2drop.eudat.eu/remote.php/webdav',
 }
 
 function B2Drop(username, password)
@@ -193,7 +194,13 @@ B2Drop.prototype.getShareLink = function (folderUri, password, callback) {
 };
 
 B2Drop.prototype.initiateWebDavPrivate = function () {
-    //webdav Private urls
+    let self = this;
+
+    self.privateAreaCon = createClient(
+        Uri.webdavPrivateUri,
+        this.username,
+        this.password
+    )
 }
 
 B2Drop.prototype.initiateWebDavShareLink = function (sharelink, password, callback) {
@@ -203,7 +210,7 @@ B2Drop.prototype.initiateWebDavShareLink = function (sharelink, password, callba
 
 
     self.connection = createClient(
-        Uri.webdavUri,
+        Uri.webdavShareUri,
         sharelink.split("/s/")[1],
         password
     );
@@ -320,13 +327,22 @@ B2Drop.prototype.delete = function (fileUri, callback) {
 }
 
 B2Drop.prototype.createFolderPrivateArea = function(folderUri, callback) {
-
+    let self = this;
+    self.privateAreaCon.createDirectory(folderUri, {
+        headers: {
+            jar: self.cookie
+        }
+    }).then(function(resp) {
+        return callback(null, resp);
+    }, function (err) {
+        return callback(err,null);
+    })
 }
 
 B2Drop.prototype.createFolderSharedArea = function (folderUri, callback) {
     const self = this;
 
-    const stream = self.connection.createReadStream(fileUri,
+    const stream = self.connection.createReadStream(folderUri,
         {
             headers: {
                 jar: self.cookie,
