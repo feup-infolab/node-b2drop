@@ -3,20 +3,15 @@ request = request.defaults({jar: true});
 const cheerio = require('cheerio');
 const qs = require('querystring');
 
-function isNull(object)
-{
-    if(object === null)
-    {
+function isNull(object) {
+    if (object === null) {
         return true;
     }
-    else
-    {
-        if(typeof object === "undefined")
-        {
+    else {
+        if (typeof object === "undefined") {
             return true;
         }
-        else
-        {
+        else {
             return false;
         }
     }
@@ -28,7 +23,6 @@ const createClient = require("webdav");
 //require('request').debug = true
 
 
-
 const Uri = {
     loginUri: 'https://b2drop.eudat.eu/login',
     logoutUri: 'https://b2drop.eudat.eu/logout',
@@ -37,8 +31,7 @@ const Uri = {
     webdavPrivateUri: 'https://b2drop.eudat.eu/remote.php/webdav',
 }
 
-function B2Drop(username, password)
-{
+function B2Drop(username, password) {
     let self = this;
 
     self.username = username;
@@ -61,8 +54,7 @@ B2Drop.prototype.login = function (callback) {
             }
         },
         function (error, response, body) {
-            if (isNull(error) && response && response.statusCode === 200)
-            {
+            if (isNull(error) && response && response.statusCode === 200) {
                 const $ = cheerio.load(body);
                 self.requesttoken = $('head').attr('data-requesttoken');
             }
@@ -81,8 +73,7 @@ B2Drop.prototype.logout = function (callback) {
             }
         },
         function (error, response) {
-            if (isNull(error) && response && response.statusCode === 200)
-            {
+            if (isNull(error) && response && response.statusCode === 200) {
                 self.cookie = null;
             }
             return callback(error, response);
@@ -105,8 +96,8 @@ B2Drop.prototype.changeFolderSetting = function (folderUri, folderID, setting, c
             form: setting
         },
         function (error, response) {
-            if(error)
-                return callback(error,null);
+            if (error)
+                return callback(error, null);
             queryString = qs.stringify({
                 format: 'json',
                 path: folderUri,
@@ -149,8 +140,7 @@ B2Drop.prototype.getShareLink = function (folderUri, password, callback) {
         },
         function (error, response) {
 
-            if (!isNull(error))
-            {
+            if (!isNull(error)) {
                 return callback(error, response);
             }
 
@@ -168,19 +158,16 @@ B2Drop.prototype.getShareLink = function (folderUri, password, callback) {
                     }
                 },
                 function (error, response, body) {
-                    if (!isNull(error) || (response && response.statusCode !== 200))
-                    {
+                    if (!isNull(error) || (response && response.statusCode !== 200)) {
                         return callback(error, response, null)
                     }
-                    else
-                    {
+                    else {
                         var info = JSON.parse(body);
                         const url = info.ocs.data[0].url;
                         const folderID = info.ocs.data[0].id;
 
                         self.changeFolderSetting(folderUri, folderID, {permissions: '15'}, function (err, response) {
-                            if (!isNull(error) || (response && response.statusCode !== 200))
-                            {
+                            if (!isNull(error) || (response && response.statusCode !== 200)) {
                                 return callback(error, response, url)
                             }
                             self.changeFolderSetting(folderUri, folderID, {password: password}, function (err, response) {
@@ -193,14 +180,16 @@ B2Drop.prototype.getShareLink = function (folderUri, password, callback) {
         });
 };
 
-B2Drop.prototype.initiateWebDavPrivate = function () {
+B2Drop.prototype.initiateWebDavPrivate = function (callback) {
     let self = this;
 
-    self.privateAreaCon = createClient(
+    const connection = self.privateAreaCon = createClient(
         Uri.webdavPrivateUri,
         this.username,
         this.password
-    )
+    );
+
+    return callback(null);
 }
 
 B2Drop.prototype.initiateWebDavShareLink = function (sharelink, password, callback) {
@@ -222,8 +211,7 @@ B2Drop.prototype.initiateWebDavShareLink = function (sharelink, password, callba
             }
         },
         function (error, response, body) {
-            if (isNull(error) && response && response.statusCode === 200)
-            {
+            if (isNull(error) && response && response.statusCode === 200) {
                 const $ = cheerio.load(body);
                 self.requesttokenShareLink = $('head').attr('data-requesttoken');
 
@@ -241,8 +229,7 @@ B2Drop.prototype.initiateWebDavShareLink = function (sharelink, password, callba
                         return callback(err, resp);
                     })
             }
-            else
-            {
+            else {
                 return callback(error, response);
             }
         });
@@ -285,11 +272,11 @@ B2Drop.prototype.put = function (fileUri, inputStream, callback) {
             }
         });
 
-    outputStream.on("finish", function(){
+    outputStream.on("finish", function () {
         callback(null);
     });
 
-    outputStream.on("error", function(){
+    outputStream.on("error", function () {
         callback("Error sending file to " + fileUri);
     });
 
@@ -300,13 +287,13 @@ B2Drop.prototype.get = function (fileUri, callback) {
     const self = this;
 
     const stream = self.connection.createReadStream(fileUri,
-            {
-                headers: {
-                    jar: self.cookie,
-                    requesttoken: self.requesttokenShareLink
-                }
+        {
+            headers: {
+                jar: self.cookie,
+                requesttoken: self.requesttokenShareLink
             }
-        );
+        }
+    );
 
     return callback(null, stream);
 }
@@ -319,39 +306,70 @@ B2Drop.prototype.delete = function (fileUri, callback) {
             jar: self.cookie,
             requesttoken: self.requesttokenShareLink
         }
-    }).then(function(resp) {
+    }).then(function (resp) {
         return callback(null, resp);
     }, function (err) {
-        return callback(err,null);
+        return callback(err, null);
     })
 }
 
-B2Drop.prototype.createFolderPrivateArea = function(folderUri, callback) {
-    let self = this;
+B2Drop.prototype.createFolderPrivateArea = function (folderUri, callback) {
+    const self = this;
     self.privateAreaCon.createDirectory(folderUri, {
         headers: {
             jar: self.cookie
         }
-    }).then(function(resp) {
+    }).then(function (resp) {
         return callback(null, resp);
     }, function (err) {
-        return callback(err,null);
-    })
+        return callback(err, null);
+    });
 }
 
 B2Drop.prototype.createFolderSharedArea = function (folderUri, callback) {
+
     const self = this;
 
-    const stream = self.connection.createReadStream(folderUri,
-        {
-            headers: {
-                jar: self.cookie,
-                requesttoken: self.requesttokenShareLink
-            }
+    self.connection.createDirectory(folderUri, {
+        headers: {
+            jar: self.cookie,
+            requesttoken:  self.requesttokenShareLink
         }
-    );
+    }).then(function (resp) {
+        return callback(null, resp);
+    }, function (err) {
+        return callback(err, null);
+    });
+}
 
-    return callback(null, stream);
+
+B2Drop.prototype.deleteFolderPrivateArea = function (folderUri, callback) {
+    const self = this;
+
+    self.privateAreaCon.deleteFile(folderUri, {
+        headers: {
+            jar: self.cookie,
+        }
+    }).then(function (resp) {
+        return callback(null, resp);
+    }, function (err) {
+        return callback(err, null);
+    })
+}
+
+B2Drop.prototype.deleteFolderSharedArea = function (folderUri, callback) {
+    const self = this;
+
+    self.connection.deleteFile(folderUri, {
+        headers: {
+            jar: self.cookie,
+            requesttoken: self.requesttokenShareLink
+        }
+    }).then(function (resp) {
+        return callback(null, resp);
+    }, function (err) {
+        return callback(err, null);
+    })
 }
 
 

@@ -6,6 +6,7 @@ const should = chai.should();
 const _ = require("underscore");
 const uuid = require("uuid");
 chai.use(chaiHttp);
+const expect = chai.expect;
 
 const fs = require("fs");
 
@@ -15,7 +16,7 @@ const testFile = require(util.pathInApp(("test/mockData/files/docMockFile.js")))
 
 //b2DropTestFolderUnit vars
 const testPathFolder1 = '/teste1';
-const dummyFolderPath = testPathFolder1 + "/dummy_folder" + uuid.v4();
+const dummyFolderPath = "/dummy_folder" + uuid.v4();
 const passwordFolder = "ananasManga1234Alfragide";
 const shareLink = "https://b2drop.eudat.eu/s/ui6aneS9aORbSzV";
 
@@ -141,21 +142,24 @@ describe("[B2Drop]", function (done) {
         it("Should  succesfully create folder in private area", function (done) {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
             var folderUri = dummyFolderPath;
-            account.initiateWebDavPrivate();
-            account.createFolderPrivateArea(folderUri, function (err, res) {
+            account.initiateWebDavPrivate(function (err) {
                 should.not.exist(err);
-                res.should.have.status(201);
-                done();
+                account.createFolderPrivateArea(folderUri, function (err, res) {
+                    should.not.exist(err);
+                    res.should.have.status(201);
+                    done();
+                });
             });
         });
 
         it("Should  succesfully create folder in shared area", function (done) {
             var account = new b2drop();
             var folderUri = dummyFolderPath;
-            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
+            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err,res) {
                 should.not.exist(err);
                 res.should.have.property('statusCode', 303);
-                account.createFolderSharedArea(folderUri, passwordFolder, function (err, res) {
+                account.createFolderSharedArea(folderUri, function (err, res) {
+                    should.not.exist(err);
                     res.should.have.status(201);
                     done();
                 });
@@ -166,11 +170,30 @@ describe("[B2Drop]", function (done) {
 
     describe("[Delete Folder]", function () {
         it("Should  succesfully delete folder in private area", function (done) {
-
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+            var folderUri = dummyFolderPath;
+            account.initiateWebDavPrivate(function (err) {
+                should.not.exist(err);
+                account.deleteFolderPrivateArea(folderUri, function (err, res) {
+                    should.not.exist(err);
+                    res.should.have.status(204);
+                    done();
+                });
+            });
         });
 
         it("Should  succesfully delete folder in shared area", function (done) {
-
+            var account = new b2drop();
+            var folderUri = dummyFolderPath;
+            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err,res) {
+                should.not.exist(err);
+                res.should.have.property('statusCode', 303);
+                account.deleteFolderSharedArea(folderUri, function (err, res) {
+                    should.not.exist(err);
+                    res.should.have.status(204);
+                    done();
+                });
+            });
         })
     });
 
@@ -179,15 +202,14 @@ describe("[B2Drop]", function (done) {
         it("Should  succesfully list folder", function (done) {
             var account = new b2drop("", "");
             account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
-                res.should.have.status(200);
+                should.not.exist(err);
+                res.should.have.property('statusCode', 303);
                 account.getDirectoryContents("/", function (err, resp) {
                     should.not.exist(err);
-                    resp.should.have.status(207);
+                    expect(resp).to.be.an('array');
                     done();
                 })
             });
-
-
         });
     });
 
