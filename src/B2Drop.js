@@ -104,7 +104,8 @@ B2Drop.prototype.changeFolderSetting = function (folderUri, folderID, setting, c
             form: setting
         },
         function (error, response) {
-            //TODO check error
+            if(error)
+                return callback(error,null);
             queryString = qs.stringify({
                 format: 'json',
                 path: folderUri,
@@ -190,6 +191,10 @@ B2Drop.prototype.getShareLink = function (folderUri, password, callback) {
                 });
         });
 };
+
+B2Drop.prototype.initiateWebDavPrivate = function () {
+    //webdav Private urls
+}
 
 B2Drop.prototype.initiateWebDavShareLink = function (sharelink, password, callback) {
     //TODO url check
@@ -314,7 +319,11 @@ B2Drop.prototype.delete = function (fileUri, callback) {
     })
 }
 
-B2Drop.prototype.createFolder = function (folderUri, callback) {
+B2Drop.prototype.createFolderPrivateArea = function(folderUri, callback) {
+
+}
+
+B2Drop.prototype.createFolderSharedArea = function (folderUri, callback) {
     const self = this;
 
     const stream = self.connection.createReadStream(fileUri,
