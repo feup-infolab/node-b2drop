@@ -11,6 +11,7 @@ const expect = chai.expect;
 const fs = require("fs");
 
 const b2drop = require(util.pathInApp("src/B2Drop.js")).B2Drop;
+const b2dropShare = require(util.pathInApp("src/B2DropShare.js")).B2DropShare;
 const b2dropAccount = require(util.pathInApp(("test/mockData/account/b2DropAccount.js")));
 const testFile = require(util.pathInApp(("test/mockData/files/docMockFile.js")));
 
@@ -70,69 +71,109 @@ describe("[B2Drop]", function (done) {
 
 
     describe("[Upload file] ", function () {
-        it("Should upload successfully test file", function (done) {
+        it("Should upload successfully test file private area", function (done) {
+            var fileUri = "/" + testFile.name;
+            var inputStream = fs.createReadStream(testFile.location);
+
+            inputStream.on('open', function () {
+                var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+                account.put(fileUri, inputStream, function (err) {
+                    should.not.exist(err);
+                    inputStream.close();
+                    done();
+                });
+            });
+        });
+
+        it("Should upload successfully test file shared area", function (done) {
             var fileUri = "/" + testFile.name;
 
             var inputStream = fs.createReadStream(testFile.location);
 
             inputStream.on('open', function () {
-                var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
-                account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
-                    res.should.have.property('statusCode', 303);
-                    account.put(fileUri, inputStream, function (err) {
-                        should.not.exist(err);
-                        inputStream.close();
-                        done();
-                    });
+                var account = new b2dropShare(shareLink, passwordFolder);
+                account.put(fileUri, inputStream, function (err) {
+                    should.not.exist(err);
+                    inputStream.close();
+                    done();
                 });
             });
         });
     });
 
     describe("[Download file]", function () {
-        it("Should get successfully test file", function (done) {
-            var account = new b2drop();
+        it("should get successfully test file private area", function (done) {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
             var fileUri = "/" + testFile.name;
             var outputStream = fs.createWriteStream(testFile.download_location);
-            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
+
+            account.get(fileUri, function (err, inputStream) {
                 should.not.exist(err);
-                res.should.have.property('statusCode', 303);
-                account.get(fileUri, function (err, inputStream) {
-                    should.not.exist(err);
-                    should.exist(inputStream);
-
-                    outputStream.on('finish', function () {
-                        const allOk = filesAreEqual(testFile.location, testFile.download_location);
-                        if (allOk) {
-                            done();
-                        }
-                        else {
-                            done("Downloaded file is not equal to mock file. Corrupted transfer?");
-                        }
-                    });
-
-                    outputStream.on('error', function () {
-                        done("Failed to pipe file from cloud server.");
-                    });
-
-                    inputStream.pipe(outputStream);
+                should.exist(inputStream);
+                outputStream.on('finish', function () {
+                    const allOk = filesAreEqual(testFile.location, testFile.download_location);
+                    if (allOk) {
+                        done();
+                    }
+                    else {
+                        done("Downloaded file is not equal to mock file. Corrupted transfer?");
+                    }
                 });
+
+                outputStream.on('error', function () {
+                    done("Failed to pipe file from cloud server.");
+                });
+
+                inputStream.pipe(outputStream);
+            });
+        });
+
+
+        it("Should get successfully test file shared area", function (done) {
+            var account = new b2dropShare(shareLink,passwordFolder);
+            var fileUri = "/" + testFile.name;
+            var outputStream = fs.createWriteStream(testFile.download_location);
+            account.get(fileUri, function (err, inputStream) {
+                should.not.exist(err);
+                should.exist(inputStream);
+
+                outputStream.on('finish', function () {
+                    const allOk = filesAreEqual(testFile.location, testFile.download_location);
+                    if (allOk) {
+                        done();
+                    }
+                    else {
+                        done("Downloaded file is not equal to mock file. Corrupted transfer?");
+                    }
+                });
+
+                outputStream.on('error', function () {
+                    done("Failed to pipe file from cloud server.");
+                });
+
+                inputStream.pipe(outputStream);
             });
         });
     });
 
     describe("[Delete file]", function () {
-        it("Should delete succesfully test file", function (done) {
-            var account = new b2drop();
+        it("should delete succesfully test file private area", function (done) {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
             var fileUri = "/" + testFile.name;
-            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
+            account.delete(fileUri, function (err, res) {
                 should.not.exist(err);
-                res.should.have.property('statusCode', 303);
-                account.delete(fileUri, function (err, res) {
-                    should.not.exist(err);
-                    res.should.have.status(204);
-                    done();
-                });
+                res.should.have.status(204);
+                done();
+            });
+        });
+
+        it("Should delete succesfully test file shared area", function (done) {
+            var account = new b2dropShare(shareLink, passwordFolder);
+            var fileUri = "/" + testFile.name;
+            account.delete(fileUri, function (err, res) {
+                should.not.exist(err);
+                res.should.have.status(204);
+                done();
             });
         });
 
@@ -142,27 +183,20 @@ describe("[B2Drop]", function (done) {
         it("Should  succesfully create folder in private area", function (done) {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
             var folderUri = dummyFolderPath;
-            account.initiateWebDavPrivate(function (err) {
+            account.createFolder(folderUri, function (err, res) {
                 should.not.exist(err);
-                account.createFolderPrivateArea(folderUri, function (err, res) {
-                    should.not.exist(err);
-                    res.should.have.status(201);
-                    done();
-                });
+                res.should.have.status(201);
+                done();
             });
         });
 
         it("Should  succesfully create folder in shared area", function (done) {
-            var account = new b2drop();
+            var account = new b2dropShare(shareLink, passwordFolder);
             var folderUri = dummyFolderPath;
-            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err,res) {
+            account.createFolder(folderUri, function (err, res) {
                 should.not.exist(err);
-                res.should.have.property('statusCode', 303);
-                account.createFolderSharedArea(folderUri, function (err, res) {
-                    should.not.exist(err);
-                    res.should.have.status(201);
-                    done();
-                });
+                res.should.have.status(201);
+                done();
             });
         });
     });
@@ -172,49 +206,51 @@ describe("[B2Drop]", function (done) {
         it("Should  succesfully delete folder in private area", function (done) {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
             var folderUri = dummyFolderPath;
-            account.initiateWebDavPrivate(function (err) {
+            account.deleteFolder(folderUri, function (err, res) {
                 should.not.exist(err);
-                account.deleteFolderPrivateArea(folderUri, function (err, res) {
-                    should.not.exist(err);
-                    res.should.have.status(204);
-                    done();
-                });
+                res.should.have.status(204);
+                done();
             });
         });
 
         it("Should  succesfully delete folder in shared area", function (done) {
-            var account = new b2drop();
+            var account = new b2dropShare(shareLink, passwordFolder);
             var folderUri = dummyFolderPath;
-            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err,res) {
+            account.deleteFolder(folderUri, function (err, res) {
                 should.not.exist(err);
-                res.should.have.property('statusCode', 303);
-                account.deleteFolderSharedArea(folderUri, function (err, res) {
-                    should.not.exist(err);
-                    res.should.have.status(204);
-                    done();
-                });
+                res.should.have.status(204);
+                done();
             });
-        })
+        });
     });
 
 
     describe("[List Folder]", function () {
-        it("Should  succesfully list folder", function (done) {
-            var account = new b2drop("", "");
-            account.initiateWebDavShareLink(shareLink, passwordFolder, function (err, res) {
+        it("Should  succesfully list folder private area", function (done) {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+            account.getDirectoryContents("/", function (err, resp) {
                 should.not.exist(err);
-                res.should.have.property('statusCode', 303);
-                account.getDirectoryContents("/", function (err, resp) {
-                    should.not.exist(err);
-                    expect(resp).to.be.an('array');
-                    done();
-                })
-            });
+                expect(resp).to.be.an('array');
+                console.log(JSON.stringify(resp, undefined, 2));
+                done();
+            })
         });
+
+        it("Should  succesfully list folder public area", function (done) {
+            var account = new b2dropShare(shareLink, passwordFolder);
+            account.getDirectoryContents("/", function (err, resp) {
+                should.not.exist(err);
+                expect(resp).to.be.an('array');
+                console.log(JSON.stringify(resp, undefined, 2));
+                done();
+            })
+        });
+
     });
 
     after(function (done) {
         done();
     });
-});
+})
+;
 
