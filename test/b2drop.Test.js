@@ -9,11 +9,14 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 
 const fs = require("fs");
+const isNull = require(util.pathInApp("src/util.js")).isNull;
+
 
 const b2drop = require(util.pathInApp("src/B2Drop.js")).B2Drop;
 const b2dropShare = require(util.pathInApp("src/B2DropShare.js")).B2DropShare;
 const b2dropAccount = require(util.pathInApp(("test/mockData/account/b2DropAccount.js")));
 const testFile = require(util.pathInApp(("test/mockData/files/docMockFile.js")));
+
 
 //b2DropTestFolderUnit vars
 const testPathFolder1 = '/teste1';
@@ -29,6 +32,33 @@ const filesAreEqual = function (fileA, fileB) {
 
     return md5FileA === md5FileB;
 }
+
+describe("[Utils]", function (done) {
+    describe("isNull", function () {
+        it("Should return true on null object", function(done) {
+            if(isNull(null)) {
+                done();
+            }else {
+                done("isNull returned false when had null as argument")
+            }
+        })
+        it("Should return false on not null object", function(done) {
+            if(!isNull("D")) {
+                done();
+            }else {
+                done("isNull returned true when had string as argument")
+            }
+        })
+        it("Should return true on undefined object", function(done) {
+            if(isNull(undefined)) {
+                done();
+            }else {
+                done("isNull returned false when had undefined as argument")
+            }
+        })
+    });
+})
+
 
 describe("[B2Drop]", function (done) {
     this.timeout(50000);
@@ -157,7 +187,7 @@ describe("[B2Drop]", function (done) {
     });
 
     describe("[Delete file]", function () {
-        it("should delete succesfully test file private area", function (done) {
+        it("should delete successfully test file private area", function (done) {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
             var fileUri = "/" + testFile.name;
             account.delete(fileUri, function (err, res) {
@@ -167,7 +197,7 @@ describe("[B2Drop]", function (done) {
             });
         });
 
-        it("Should delete succesfully test file shared area", function (done) {
+        it("Should delete successfully test file shared area", function (done) {
             var account = new b2dropShare(shareLink, passwordFolder);
             var fileUri = "/" + testFile.name;
             account.delete(fileUri, function (err, res) {
@@ -180,7 +210,7 @@ describe("[B2Drop]", function (done) {
     });
 
     describe("[Create Folder]", function () {
-        it("Should  succesfully create folder in private area", function (done) {
+        it("Should  successfully create folder in private area", function (done) {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
             var folderUri = dummyFolderPath;
             account.createFolder(folderUri, function (err, res) {
@@ -190,7 +220,7 @@ describe("[B2Drop]", function (done) {
             });
         });
 
-        it("Should  succesfully create folder in shared area", function (done) {
+        it("Should  successfully create folder in shared area", function (done) {
             var account = new b2dropShare(shareLink, passwordFolder);
             var folderUri = dummyFolderPath;
             account.createFolder(folderUri, function (err, res) {
@@ -203,7 +233,7 @@ describe("[B2Drop]", function (done) {
 
 
     describe("[Delete Folder]", function () {
-        it("Should  succesfully delete folder in private area", function (done) {
+        it("Should  successfully delete folder in private area", function (done) {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
             var folderUri = dummyFolderPath;
             account.deleteFolder(folderUri, function (err, res) {
@@ -213,7 +243,17 @@ describe("[B2Drop]", function (done) {
             });
         });
 
-        it("Should  succesfully delete folder in shared area", function (done) {
+        it("Should  fail delete folder in private area", function (done) {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+            var folderUri = dummyFolderPath + "thatDontExist";
+            account.deleteFolder(folderUri, function (err, res) {
+                should.not.exist(res);
+                should.exist(err);
+                done();
+            });
+        });
+
+        it("Should  successfully delete folder in shared area", function (done) {
             var account = new b2dropShare(shareLink, passwordFolder);
             var folderUri = dummyFolderPath;
             account.deleteFolder(folderUri, function (err, res) {
@@ -222,8 +262,17 @@ describe("[B2Drop]", function (done) {
                 done();
             });
         });
-    });
 
+        it("Should  fail delete folder in shared area", function (done) {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+            var folderUri = dummyFolderPath + "thatDontExist";
+            account.deleteFolder(folderUri, function (err, res) {
+                should.not.exist(res);
+                should.exist(err);
+                done();
+            });
+        });
+    });
 
     describe("[List Folder]", function () {
         it("Should  succesfully list folder private area", function (done) {
@@ -236,7 +285,16 @@ describe("[B2Drop]", function (done) {
             })
         });
 
-        it("Should  succesfully list folder public area", function (done) {
+        it("Should fail listing folder in private area that doens't exists", function (done) {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+                account.getDirectoryContents("/folderThatdoenstExist", function (err, resp) {
+                    should.exist(err);
+                    should.not.exist(resp);
+                    done();
+                })
+        });
+
+        it("Should  successfully list folder public area", function (done) {
             var account = new b2dropShare(shareLink, passwordFolder);
             account.getDirectoryContents("/", function (err, resp) {
                 should.not.exist(err);
@@ -246,6 +304,14 @@ describe("[B2Drop]", function (done) {
             })
         });
 
+        it("Should fail listing folder in public area that doens't exists", function (done) {
+                var account = new b2dropShare(shareLink, passwordFolder);
+                account.getDirectoryContents("/folderThatdoenstExist", function (err, resp) {
+                    should.exist(err);
+                    should.not.exist(resp);
+                    done();
+                })
+        });
     });
 
     after(function (done) {
