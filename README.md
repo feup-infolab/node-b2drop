@@ -37,10 +37,10 @@ NodeJS client for B2Drop, based on OwnCloud
    
    The extended features uses request and requesttoken to validate the request.
    
-   #####WebDav
+   ##### WebDav
    ![workflow B2drop webdav](resources/flow1.png "B2drop WebDav")
    
-   #####Extended Features
+   ##### Extended Features
    ![workflow B2drop extra funcs](resources/flow3.png "B2drop request")
    
    ##### Methods
@@ -60,7 +60,10 @@ NodeJS client for B2Drop, based on OwnCloud
    B2DropShare is responsible for all operations related to users shared area, only uses WebDav.
    
    
-   ####WebDav
+   
+
+   #### WebDav
+ 
   ![workflow B2drop WebDav](resources/flow4.jpg "B2drop WebDav")
    
    #### Methods
@@ -73,7 +76,7 @@ NodeJS client for B2Drop, based on OwnCloud
  - **`getDirectoryContents(folderPath, callback)`** - List folder content
     
 ## Examples
- - ####Login
+ #### Login
    ```js
         const b2drop = require('node-b2drop').B2Drop;
         
@@ -85,7 +88,7 @@ NodeJS client for B2Drop, based on OwnCloud
                         });
                     });
    ```
- - ####Upload File 
+  #### Upload File 
    ```js
          const b2drop = require('node-b2drop').B2Drop;
            
