@@ -28,6 +28,7 @@
   "homepage": "https://github.com/feup-infolab/node-b2drop#readme",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
+    "codacy-coverage": "^2.0.3",
     "md5-file": "^3.2.3",
     "mkdirp": "^0.5.1",
     "path": "^0.12.7",
