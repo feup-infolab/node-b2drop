@@ -19,7 +19,7 @@ NodeJS client for B2Drop, based on OwnCloud
             
 ## Installation 
 
-    $ npm install node-b2drop --save
+    $ npm i @feup-infolab/node-b2drop
     
 ## Module Details 
  ### Introduction
