@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "fix": "eslint --fix ./src/** --config ./src/.eslintrc.json"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
   },
   "homepage": "https://github.com/feup-infolab/node-b2drop#readme",
   "dependencies": {
+    "async": "^2.6.0",
     "cheerio": "^1.0.0-rc.2",
     "codacy-coverage": "^2.0.3",
     "md5-file": "^3.2.3",
@@ -46,6 +48,13 @@
     "coveralls": "^2.11.16",
     "istanbul": "^0.4.5",
     "mocha-lcov-reporter": "^1.2.0",
-    "stream-to-array": "^2.3.0"
+    "stream-to-array": "^2.3.0",
+    "eslint": "^4.15.0",
+    "eslint-config-standard": "^11.0.0-beta.0",
+    "eslint-config-strict-standard": "^3.0.1",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1"
   }
 }

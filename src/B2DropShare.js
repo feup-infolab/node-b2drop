@@ -1,10 +1,13 @@
+const async = require("async");
 const createClient = require("webdav");
+const util = require("./util");
 
 const Uri = {
-    webdavShareUri: 'https://b2drop.eudat.eu/public.php/webdav',
-}
+    webdavShareUri: "https://b2drop.eudat.eu/public.php/webdav"
+};
 
-function B2DropShare(sharelink, password) {
+function B2DropShare (sharelink, password)
+{
     let self = this;
 
     self.connection = createClient(
@@ -14,83 +17,137 @@ function B2DropShare(sharelink, password) {
     );
 }
 
+B2DropShare.prototype.checkIfFolderExists = function (folderPath, callback)
+{
+    const self = this;
+    self.getDirectoryContents(folderPath, function (err, response)
+    {
+        if (err)
+        {
+            if (err.status === 404)
+            {
+                return callback(null, false);
+            }
 
-B2DropShare.prototype.getDirectoryContents = function (folderPath, callback) {
+            return callback(err, response);
+        }
+        else if (response && response instanceof Array)
+        {
+            return callback(null, true);
+        }
 
+        return callback(1, "Invalid response from server when fetching contents of the B2Drop folder " + folderPath + " !");
+    });
+};
+
+B2DropShare.prototype.getDirectoryContents = function (folderPath, callback)
+{
     let self = this;
 
     self.connection.getDirectoryContents(folderPath)
-        .then(function (contents) {
-                return callback(null, contents);
-            },
-            function (error) {
-                return callback(error, null);
-
-            }
+        .then(function (contents)
+        {
+            return callback(null, contents);
+        },
+        function (error)
+        {
+            return callback(error, null);
+        }
         );
-}
+};
 
-
-B2DropShare.prototype.put = function (fileUri, inputStream, callback) {
+B2DropShare.prototype.put = function (fileUri, inputStream, callback)
+{
     let self = this;
 
     const outputStream = self.connection.createWriteStream(fileUri);
 
-    outputStream.on("finish", function () {
+    outputStream.on("finish", function ()
+    {
         callback(null);
     });
 
-    outputStream.on("error", function () {
+    outputStream.on("error", function ()
+    {
         callback("Error sending file to " + fileUri);
     });
 
     inputStream.pipe(outputStream);
-}
+};
 
-
-B2DropShare.prototype.get = function (fileUri, callback) {
+B2DropShare.prototype.get = function (fileUri, callback)
+{
     const self = this;
 
     const stream = self.connection.createReadStream(fileUri);
 
     return callback(null, stream);
-}
+};
 
-
-B2DropShare.prototype.delete = function (fileUri, callback) {
+B2DropShare.prototype.delete = function (fileUri, callback)
+{
     const self = this;
 
     self.connection.deleteFile(fileUri)
-        .then(function (resp) {
+        .then(function (resp)
+        {
             return callback(null, resp);
-        }, function (err) {
-            return callback(err, null);
-        })
-}
-
-
-B2DropShare.prototype.createFolder = function (folderUri, callback) {
-
-    const self = this;
-
-    self.connection.createDirectory(folderUri)
-        .then(function (resp) {
-            return callback(null, resp);
-        }, function (err) {
+        }, function (err)
+        {
             return callback(err, null);
         });
-}
+};
 
-B2DropShare.prototype.deleteFolder = function (folderUri, callback) {
+B2DropShare.prototype.createFolder = function (folderUri, callback)
+{
+    const self = this;
+
+    const allPathsUntilFolder = util.getAllPathsUntilFolder(folderUri);
+
+    async.mapSeries(allPathsUntilFolder, function (folderPath, callback)
+    {
+        self.checkIfFolderExists(folderPath, function (err, exists)
+        {
+            if (err)
+            {
+                return callback(err, "Failed check if the folder " + folderPath + " in B2drop exists");
+            }
+
+            if (!exists)
+            {
+                self.connection.createDirectory(folderPath)
+                    .then(function (resp)
+                    {
+                        return callback(null, resp);
+                    }, function (err)
+                    {
+                        return callback(err, null);
+                    });
+            }
+            else
+            {
+                return callback(null);
+            }
+        });
+    }, function (err, results)
+    {
+        callback(err, results);
+    });
+};
+
+B2DropShare.prototype.deleteFolder = function (folderUri, callback)
+{
     const self = this;
 
     self.connection.deleteFile(folderUri)
-        .then(function (resp) {
+        .then(function (resp)
+        {
             return callback(null, resp);
-        }, function (err) {
+        }, function (err)
+        {
             return callback(err, null);
-        })
-}
+        });
+};
 
 module.exports.B2DropShare = B2DropShare;
 

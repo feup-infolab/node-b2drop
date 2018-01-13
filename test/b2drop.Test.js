@@ -216,12 +216,11 @@ describe("[B2Drop]", function (done) {
     });
 
     describe("[Create Folder]", function () {
-        it("Should  successfully create folder in private area", function (done) {
+        it("Should successfully create folder in private area", function (done) {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
             var folderUri = dummyFolderPath;
             account.createFolder(folderUri, function (err, res) {
                 should.not.exist(err);
-                res.should.have.status(201);
                 done();
             });
         });
@@ -231,7 +230,24 @@ describe("[B2Drop]", function (done) {
             var folderUri = dummyFolderPath;
             account.createFolder(folderUri, function (err, res) {
                 should.not.exist(err);
-                res.should.have.status(201);
+                done();
+            });
+        });
+
+        it("Should  successfully create folder structure in private area", function (done) {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+            var folderUri = dummyFolderPath + "/filho/neto/bisneto/trineto/tetraneto";
+            account.createFolder(folderUri, function (err, res) {
+                should.not.exist(err);
+                done();
+            });
+        });
+
+        it("Should  successfully create folder structure in shared area", function (done) {
+            var account = new b2dropShare(shareLink, passwordFolder);
+            var folderUri = dummyFolderPath + "/filho/neto/bisneto/trineto/tetraneto";
+            account.createFolder(folderUri, function (err, res) {
+                should.not.exist(err);
                 done();
             });
         });
@@ -253,10 +269,38 @@ describe("[B2Drop]", function (done) {
         });
     });
 
+    describe("[Upload file to inside Folder structure]", function () {
+        it("Should  successfully create a file inside the new folder in private area", function (done) {
+            var fileUri = dummyFolderPath + "/filho/neto/bisneto/trineto/tetraneto/" + testFile.name;
+            var inputStream = fs.createReadStream(testFile.location);
+
+            inputStream.on('open', function () {
+                var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+                account.put(fileUri, inputStream, function (err) {
+                    should.not.exist(err);
+                    inputStream.close();
+                    done();
+                });
+            });
+        });
+    });
+
     describe("[Delete File inside Folder]", function () {
         it("Should  successfully delete folder in private area", function (done) {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
             var fileUri = dummyFolderPath + "/" + testFile.name;
+            account.delete(fileUri, function (err, res) {
+                should.not.exist(err);
+                res.should.have.status(204);
+                done();
+            });
+        });
+    });
+
+    describe("[Delete File inside Folder structure]", function () {
+        it("Should  successfully delete folder in private area", function (done) {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+            var fileUri = dummyFolderPath + "/filho/neto/bisneto/trineto/tetraneto/" + testFile.name;
             account.delete(fileUri, function (err, res) {
                 should.not.exist(err);
                 res.should.have.status(204);
