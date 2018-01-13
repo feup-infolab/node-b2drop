@@ -1,4 +1,4 @@
-global.util = require("../src/util");
+const util = global.util = require("../src/util");
 
 const chai = require("chai");
 const chaiHttp = require("chai-http");
