@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "A B2Drop client for NodeJS",
   "main": "index.js",
+  "engines": {
+    "node": "v8.9.0",
+    "npm": "5.5.1"
+  },
   "directories": {
     "test": "test"
   },
