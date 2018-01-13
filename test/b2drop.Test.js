@@ -1,4 +1,4 @@
-const util = global.util = require("../src/util");
+const util = require("../src/util");
 
 const chai = require("chai");
 const chaiHttp = require("chai-http");
@@ -188,7 +188,7 @@ describe("[B2Drop]", function (done)
                     done("Downloaded file is not equal to mock file. Corrupted transfer?");
                 }
 
-                /* var renamedFilePath = global.util.pathInApp("/test/mockData/files/test_downloads/zipTest.doc");
+                /* var renamedFilePath = util.pathInApp("/test/mockData/files/test_downloads/zipTest.doc");
                 fs.rename(testFile.download_location, renamedFilePath, function(err) {
 
                 });*/

@@ -1,10 +1,11 @@
+const util = require("./util");
+
 let request = require("request");
 request = request.defaults({jar: true});
 const cheerio = require("cheerio");
 const async = require("async");
 const qs = require("querystring");
 const isNull = require("./util").isNull;
-const util = require("./util");
 
 const createClient = require("webdav");
 
