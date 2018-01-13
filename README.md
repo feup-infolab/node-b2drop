@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/feup-infolab/node-b2drop.svg?branch=master)](https://travis-ci.org/feup-infolab/node-b2drop)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5193de70952343a8a66e9c26e004713f)](https://www.codacy.com/app/silvae86/node-b2drop?utm_source=github.com&utm_medium=referral&utm_content=feup-infolab/node-b2drop&utm_campaign=badger)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/5193de70952343a8a66e9c26e004713f)](https://www.codacy.com/app/silvae86/node-b2drop?utm_source=github.com&utm_medium=referral&utm_content=feup-infolab/node-b2drop&utm_campaign=Badge_Coverage)
-[![npm version](https://badge.fury.io/js/node-b2drop.svg)](https://badge.fury.io/js/node-b2drop)
+[![npm version](https://badge.fury.io/js/%40feup-infolab%2Fnode-b2drop.svg)](https://badge.fury.io/js/%40feup-infolab%2Fnode-b2drop)
 [![Chat on gitter](https://img.shields.io/gitter/room/badges/shields.svg)](https://gitter.im/feup-infolab/dendro)
 
 
