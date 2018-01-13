@@ -1,4 +1,4 @@
-const util = global.util = require("../src/util");
+const util = require("../src/util");
 
 const chai = require("chai");
 const chaiHttp = require("chai-http");
@@ -178,7 +178,7 @@ describe("[B2Drop]", function (done)
             account.get(fileUri, outputStream, function (err, result)
             {
                 should.not.exist(err);
-                var renamedFilePath = global.util.pathInApp("/test/mockData/files/test_downloads/docTest.doc");
+                var renamedFilePath = util.pathInApp("/test/mockData/files/test_downloads/docTest.doc");
                 fs.rename(testFile.download_location, renamedFilePath, function (err)
                 {
                     const allOk = filesAreEqual(testFile.location, renamedFilePath);
@@ -201,7 +201,7 @@ describe("[B2Drop]", function (done)
             var outputStream = fs.createWriteStream(testFile.download_location);
             account.get(fileUri, outputStream, function (err, result)
             {
-                var renamedFilePath = global.util.pathInApp("/test/mockData/files/test_downloads/docTest.doc");
+                var renamedFilePath = util.pathInApp("/test/mockData/files/test_downloads/docTest.doc");
                 fs.rename(testFile.download_location, renamedFilePath, function (err)
                 {
                     const allOk = filesAreEqual(testFile.location, renamedFilePath);
