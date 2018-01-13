@@ -1,6 +1,6 @@
 {
   "name": "@feup-infolab/node-b2drop",
-  "version": "0.0.13",
+  "version": "1.0.0",
   "description": "A B2Drop client for NodeJS",
   "main": "index.js",
   "directories": {
