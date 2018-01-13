@@ -145,13 +145,16 @@ describe("[B2Drop]", function (done) {
 
             account.get(fileUri, outputStream, function (err, result) {
                 should.not.exist(err);
-                const allOk = filesAreEqual(testFile.location, testFile.download_location);
-                if (allOk) {
-                    done();
-                }
-                else {
-                    done("Downloaded file is not equal to mock file. Corrupted transfer?");
-                }
+                var renamedFilePath = global.util.pathInApp("/test/mockData/files/test_downloads/docTest.doc");
+                fs.rename(testFile.download_location, renamedFilePath, function(err) {
+                    const allOk = filesAreEqual(testFile.location, renamedFilePath);
+                    if (allOk) {
+                        done();
+                    }
+                    else {
+                        done("Downloaded file is not equal to mock file. Corrupted transfer?");
+                    }
+                });
             });
         });
 
@@ -161,15 +164,16 @@ describe("[B2Drop]", function (done) {
             var fileUri = "/" + testFile.name;
             var outputStream = fs.createWriteStream(testFile.download_location);
             account.get(fileUri, outputStream, function (err, result) {
-                should.not.exist(err);
-
-                const allOk = filesAreEqual(testFile.location, testFile.download_location);
-                if (allOk) {
-                    done();
-                }
-                else {
-                    done("Downloaded file is not equal to mock file. Corrupted transfer?");
-                }
+                var renamedFilePath = global.util.pathInApp("/test/mockData/files/test_downloads/docTest.doc");
+                fs.rename(testFile.download_location, renamedFilePath, function(err) {
+                    const allOk = filesAreEqual(testFile.location, renamedFilePath);
+                    if (allOk) {
+                        done();
+                    }
+                    else {
+                        done("Downloaded file is not equal to mock file. Corrupted transfer?");
+                    }
+                });
             });
         });
     });
