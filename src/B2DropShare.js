@@ -104,6 +104,12 @@ B2DropShare.prototype.get = function (fileUri, outputStream, callback)
         return callback(null, msg);
     });
 
+    outputStream.on("error", function ()
+    {
+        const msg = "Error writing the file from b2drop to temp file";
+        return callback(2, msg);
+    });
+
     downloadStream.pipe(outputStream);
 };
 
