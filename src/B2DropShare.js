@@ -98,7 +98,7 @@ B2DropShare.prototype.get = function (fileUri, outputStream, callback)
     {
     });
 
-    downloadStream.on("close", function ()
+    downloadStream.on("finish", function ()
     {
         const msg = "Finished reading the file from b2drop";
         return callback(null, msg);
