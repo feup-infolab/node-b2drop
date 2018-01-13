@@ -67,6 +67,12 @@ describe("[B2Drop]", function (done) {
         done();
     });
 
+    beforeEach(function (done) {
+        setTimeout(function(){
+            done();
+        }, 400);
+    });
+
     describe("[Login/out]", function () {
         it("Should Login and Logout", function (done) {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
@@ -231,6 +237,33 @@ describe("[B2Drop]", function (done) {
         });
     });
 
+    describe("[Upload file to inside a Folder]", function () {
+        it("Should  successfully create a file inside the new folder in private area", function (done) {
+            var fileUri = dummyFolderPath + "/" + testFile.name;
+            var inputStream = fs.createReadStream(testFile.location);
+
+            inputStream.on('open', function () {
+                var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+                account.put(fileUri, inputStream, function (err) {
+                    should.not.exist(err);
+                    inputStream.close();
+                    done();
+                });
+            });
+        });
+    });
+
+    describe("[Delete File inside Folder]", function () {
+        it("Should  successfully delete folder in private area", function (done) {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+            var fileUri = dummyFolderPath + "/" + testFile.name;
+            account.delete(fileUri, function (err, res) {
+                should.not.exist(err);
+                res.should.have.status(204);
+                done();
+            });
+        });
+    });
 
     describe("[Delete Folder]", function () {
         it("Should  successfully delete folder in private area", function (done) {
