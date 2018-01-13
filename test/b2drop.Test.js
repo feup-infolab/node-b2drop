@@ -143,24 +143,15 @@ describe("[B2Drop]", function (done) {
             var fileUri = "/" + testFile.name;
             var outputStream = fs.createWriteStream(testFile.download_location);
 
-            account.get(fileUri, function (err, inputStream) {
+            account.get(fileUri, outputStream, function (err, result) {
                 should.not.exist(err);
-                should.exist(inputStream);
-                outputStream.on('finish', function () {
-                    const allOk = filesAreEqual(testFile.location, testFile.download_location);
-                    if (allOk) {
-                        done();
-                    }
-                    else {
-                        done("Downloaded file is not equal to mock file. Corrupted transfer?");
-                    }
-                });
-
-                outputStream.on('error', function () {
-                    done("Failed to pipe file from cloud server.");
-                });
-
-                inputStream.pipe(outputStream);
+                const allOk = filesAreEqual(testFile.location, testFile.download_location);
+                if (allOk) {
+                    done();
+                }
+                else {
+                    done("Downloaded file is not equal to mock file. Corrupted transfer?");
+                }
             });
         });
 
@@ -169,25 +160,16 @@ describe("[B2Drop]", function (done) {
             var account = new b2dropShare(shareLink,passwordFolder);
             var fileUri = "/" + testFile.name;
             var outputStream = fs.createWriteStream(testFile.download_location);
-            account.get(fileUri, function (err, inputStream) {
+            account.get(fileUri, outputStream, function (err, result) {
                 should.not.exist(err);
-                should.exist(inputStream);
 
-                outputStream.on('finish', function () {
-                    const allOk = filesAreEqual(testFile.location, testFile.download_location);
-                    if (allOk) {
-                        done();
-                    }
-                    else {
-                        done("Downloaded file is not equal to mock file. Corrupted transfer?");
-                    }
-                });
-
-                outputStream.on('error', function () {
-                    done("Failed to pipe file from cloud server.");
-                });
-
-                inputStream.pipe(outputStream);
+                const allOk = filesAreEqual(testFile.location, testFile.download_location);
+                if (allOk) {
+                    done();
+                }
+                else {
+                    done("Downloaded file is not equal to mock file. Corrupted transfer?");
+                }
             });
         });
     });

@@ -241,13 +241,36 @@ B2Drop.prototype.put = function (fileUri, inputStream, callback)
     inputStream.pipe(outputStream);
 };
 
-B2Drop.prototype.get = function (fileUri, callback)
+B2Drop.prototype.get = function (fileUri, outputStream, callback)
 {
     const self = this;
 
-    const stream = self.connection.createReadStream(fileUri);
+    const downloadStream = self.connection.createReadStream(fileUri);
 
-    return callback(null, stream);
+    downloadStream.on("error", function (error)
+    {
+        if (error.code === "ENOENT")
+        {
+            return callback(404, error);
+        }
+        return callback(1, error);
+    });
+
+    downloadStream.on("data", function (data)
+    {
+    });
+
+    downloadStream.on("end", function ()
+    {
+    });
+
+    downloadStream.on("close", function ()
+    {
+        const msg = "Finished reading the file from b2drop";
+        return callback(null, msg);
+    });
+
+    downloadStream.pipe(outputStream);
 };
 
 B2Drop.prototype.delete = function (fileUri, callback)
