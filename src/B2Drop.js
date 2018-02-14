@@ -345,4 +345,18 @@ B2Drop.prototype.deleteFolder = function (folderUri, callback)
         });
 };
 
+B2Drop.prototype.getQuota = function (callback)
+{
+    const self = this;
+
+    self.connection.getQuota()
+        .then(function (resp)
+        {
+            return callback(null, resp);
+        }, function (err)
+        {
+            return callback(err, null);
+        });
+}
+
 module.exports.B2Drop = B2Drop;

@@ -187,11 +187,6 @@ describe("[B2Drop]", function (done)
                 {
                     done("Downloaded file is not equal to mock file. Corrupted transfer?");
                 }
-
-                /* var renamedFilePath = util.pathInApp("/test/mockData/files/test_downloads/zipTest.doc");
-                fs.rename(testFile.download_location, renamedFilePath, function(err) {
-
-                });*/
             });
         });
 
@@ -460,10 +455,33 @@ describe("[B2Drop]", function (done)
         });
     });
 
+    describe("[Quota]", function ()
+    {
+        it("Should  succesfully get current quota", function (done)
+        {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+            account.getQuota(function (err, quota)
+            {
+
+                should.not.exist(err);
+                should.exist(quota);
+
+                if (Object.keys(quota).length === 2)
+                {
+                    should.exist(quota["used"]);
+                    should.exist(quota["available"]);
+                    done();
+                }
+                else
+                {
+                    done("unnable to getQuota");
+                }
+            });
+        });
+    });
+
     after(function (done)
     {
         done();
     });
-})
-;
-
+});
