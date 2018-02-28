@@ -54,7 +54,7 @@ B2Drop.prototype.checkIfFolderExists = function (folderPath, callback)
     });
 };
 
-B2Drop.prototype.login = function (callback)
+B2Drop.prototype.getAuthToken = function (callback)
 {
     let self = this;
 
@@ -77,27 +77,6 @@ B2Drop.prototype.login = function (callback)
         }
         return callback(error, response);
     });
-};
-
-B2Drop.prototype.logout = function (callback)
-{
-    let self = this;
-
-    request.get({
-        url: Uri.logoutUri,
-        headers: {
-            requesttoken: self.requesttoken
-        }
-    },
-    function (error, response)
-    {
-        if (isNull(error) && response && response.statusCode === 200)
-        {
-            self.cookie = null;
-        }
-        return callback(error, response);
-    }
-    );
 };
 
 B2Drop.prototype.changeFolderSetting = function (folderUri, folderID, setting, callback)
@@ -144,67 +123,93 @@ B2Drop.prototype.getShareLink = function (folderUri, password, callback)
 {
     let self = this;
 
-    var queryString = qs.stringify({
-        format: "json",
-        password: "",
-        passwordChanged: "false",
-        permission: "31",
-        expireDate: "",
-        shareType: "3",
-        path: folderUri
-    });
-
-    request.post({
-        url: Uri.shareLinkRequest + "?" + queryString,
-        headers: {
-            jar: self.cookie,
-            requesttoken: self.requesttoken
-        }
-    },
-    function (error, response)
+    var getLink = function (callback)
     {
-        if (!isNull(error))
-        {
-            return callback(error, response);
-        }
-
-        queryString = qs.stringify({
+        var queryString = qs.stringify({
             format: "json",
-            path: folderUri,
-            reshares: "true"
+            password: "",
+            passwordChanged: "false",
+            permission: "31",
+            expireDate: "",
+            shareType: "3",
+            path: folderUri
         });
 
-        request.get({
+        request.post({
             url: Uri.shareLinkRequest + "?" + queryString,
             headers: {
                 jar: self.cookie,
                 requesttoken: self.requesttoken
             }
         },
-        function (error, response, body)
+        function (error, response)
         {
-            if (!isNull(error) || (response && response.statusCode !== 200))
+            if (!isNull(error))
             {
-                return callback(error, response, null);
+                return callback(error, response);
             }
 
-            var info = JSON.parse(body);
-            const url = info.ocs.data[0].url;
-            const folderID = info.ocs.data[0].id;
+            queryString = qs.stringify({
+                format: "json",
+                path: folderUri,
+                reshares: "true"
+            });
 
-            self.changeFolderSetting(folderUri, folderID, {permissions: "15"}, function (err, response)
+            request.get({
+                url: Uri.shareLinkRequest + "?" + queryString,
+                headers: {
+                    jar: self.cookie,
+                    requesttoken: self.requesttoken
+                }
+            },
+            function (error, response, body)
             {
                 if (!isNull(error) || (response && response.statusCode !== 200))
                 {
-                    return callback(error, response, url);
+                    return callback(error, response, null);
                 }
-                self.changeFolderSetting(folderUri, folderID, {password: password}, function (err, response)
+
+                var info = JSON.parse(body);
+                const url = info.ocs.data[0].url;
+                const folderID = info.ocs.data[0].id;
+
+                self.changeFolderSetting(folderUri, folderID, {permissions: "15"}, function (err, response)
                 {
-                    return callback(err, response, url);
+                    if (!isNull(error) || (response && response.statusCode !== 200))
+                    {
+                        return callback(error, response, url);
+                    }
+                    self.changeFolderSetting(folderUri, folderID, {password: password}, function (err, response)
+                    {
+                        return callback(err, response, url);
+                    });
                 });
             });
         });
-    });
+    };
+
+    if (isNull(self.requesttoken))
+    {
+        self.getAuthToken(function (err, response)
+        {
+            if (response.statusCode !== 200)
+            {
+                return callback(err, response);
+            }
+
+            getLink(function (err, response, url)
+            {
+                return callback(err, response, url);
+            });
+        });
+    }
+    else
+    {
+        getLink(function (err, resp)
+        {
+            return callback(err, resp);
+        });
+    }
 };
 
 B2Drop.prototype.getDirectoryContents = function (folderPath, callback)
@@ -345,4 +350,38 @@ B2Drop.prototype.deleteFolder = function (folderUri, callback)
         });
 };
 
+B2Drop.prototype.getQuota = function (callback)
+{
+    const self = this;
+
+    self.connection.getQuota()
+        .then(function (resp)
+        {
+            return callback(null, resp);
+        }, function (err)
+        {
+            return callback(err, null);
+        });
+};
+
+B2Drop.prototype.testConnection = function (callback)
+{
+    const self = this;
+
+    self.connection.getQuota()
+        .then(function (resp)
+        {
+            var keys = Object.keys(resp);
+            if (keys.length === 2 && keys[0] === "used")
+            {
+                return callback(null, "Valid Connection");
+            }
+
+            return callback(resp, "Invalid Connection");
+        },
+        function (err)
+        {
+            return callback(err, "Invalid Connection");
+        });
+};
 module.exports.B2Drop = B2Drop;

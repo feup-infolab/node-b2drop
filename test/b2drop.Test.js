@@ -89,19 +89,22 @@ describe("[B2Drop]", function (done)
         }, 400);
     });
 
-    describe("[Login/out]", function ()
+    describe("[Get auth token]", function ()
     {
-        it("Should Login and Logout", function (done)
+        it("Should get auth token", function (done)
         {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
-            account.login(function (err, response)
+            account.getAuthToken(function (err, response)
             {
                 response.should.have.property("statusCode", 200);
-                account.logout(function (err, response)
+                if (!isNull(account.requesttoken))
                 {
-                    response.should.have.property("statusCode", 200);
                     done();
-                });
+                }
+                else
+                {
+                    done("unnable to get auth token");
+                }
             });
         });
     });
@@ -111,20 +114,12 @@ describe("[B2Drop]", function (done)
         it("Should succesfully get link", function (done)
         {
             var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
-            account.login(function (err, res)
+            account.getShareLink(testPathFolder1, passwordFolder, function (err, response, shareLink)
             {
-                res.should.have.property("statusCode", 200);
-                account.getShareLink(testPathFolder1, passwordFolder, function (err, response, shareLink)
-                {
-                    console.log(shareLink);
-                    response.should.have.property("statusCode", 200);
-                    shareLink.should.contain("https://b2drop.eudat.eu/s/");
-                    account.logout(function (err, response)
-                    {
-                        response.should.have.property("statusCode", 200);
-                        done();
-                    });
-                });
+                console.log(shareLink);
+                response.should.have.property("statusCode", 200);
+                shareLink.should.contain("https://b2drop.eudat.eu/s/");
+                done();
             });
         });
     });
@@ -187,11 +182,6 @@ describe("[B2Drop]", function (done)
                 {
                     done("Downloaded file is not equal to mock file. Corrupted transfer?");
                 }
-
-                /* var renamedFilePath = util.pathInApp("/test/mockData/files/test_downloads/zipTest.doc");
-                fs.rename(testFile.download_location, renamedFilePath, function(err) {
-
-                });*/
             });
         });
 
@@ -460,10 +450,68 @@ describe("[B2Drop]", function (done)
         });
     });
 
+    describe("[Quota]", function ()
+    {
+        it("Should  succesfully get current quota", function (done)
+        {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+            account.getQuota(function (err, quota)
+            {
+                should.not.exist(err);
+                should.exist(quota);
+
+                if (Object.keys(quota).length === 2)
+                {
+                    should.exist(quota.used);
+                    should.exist(quota.available);
+                    done();
+                }
+                else
+                {
+                    done("unnable to getQuota");
+                }
+            });
+        });
+
+        it ("Should fail to get current quota", function (done)
+        {
+            var account = new b2drop(b2dropAccount.username, "Random test");
+            account.getQuota(function (err, quota)
+            {
+                should.exist(err);
+                should.not.exist(quota);
+                done();
+            });
+        });
+    });
+
+    describe("[Test Connection]", function ()
+    {
+        it("Should  succesfully establish connection ", function (done)
+        {
+            var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+            account.testConnection(function (err, resp)
+            {
+                should.not.exist(err);
+                should.exist(resp);
+                done();
+            });
+        });
+
+        it ("Should fail to establish  connection", function (done)
+        {
+            var account = new b2drop(b2dropAccount.username, "Random test");
+            account.testConnection(function (err, resp)
+            {
+                should.exist(err);
+                should.exist(resp);
+                done();
+            });
+        });
+    });
+
     after(function (done)
     {
         done();
     });
-})
-;
-
+});
