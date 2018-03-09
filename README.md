@@ -41,7 +41,7 @@ NodeJS client for B2Drop, based on OwnCloud
    ![workflow B2drop webdav](resources/flow1.png "B2drop WebDav")
    
    ##### Extended Features
-   ![workflow B2drop extra funcs](resources/flow3.png "B2drop request")
+   ![workflow B2drop extra funcs](resources/flow3.png "B2drop extra funcs")
    
    ##### Methods
  - **`B2Drop(username, password)`** - Constructor
@@ -67,7 +67,11 @@ NodeJS client for B2Drop, based on OwnCloud
 
    #### WebDav
  
-  ![workflow B2drop WebDav](resources/flow4.jpg "B2drop WebDav")
+  ![workflow B2dropShare WebDav](resources/flow4.jpg "B2drop WebDav")
+  
+     
+   ##### Extended Features
+   ![workflow B2dropShare extra funcs](resources/flow5.png "B2drop request")
    
    #### Methods
  - **`B2DropShare ( sharelink, password)`** - Constructor
