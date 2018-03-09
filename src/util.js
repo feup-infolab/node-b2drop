@@ -34,3 +34,11 @@ module.exports.getAllPathsUntilFolder = function (folderUri)
     let pathsWithoutRoot = paths.splice(1);
     return pathsWithoutRoot;
 };
+
+module.exports.Uri = {
+    loginUri: "https://b2drop.eudat.eu/login",
+    logoutUri: "https://b2drop.eudat.eu/logout",
+    shareLinkRequest: "https://b2drop.eudat.eu/ocs/v2.php/apps/files_sharing/api/v1/shares",
+    webdavPrivateUri: "https://b2drop.eudat.eu/remote.php/webdav",
+    webdavShareUri: "https://b2drop.eudat.eu/public.php/webdav"
+};
