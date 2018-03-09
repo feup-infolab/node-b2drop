@@ -47,7 +47,7 @@ NodeJS client for B2Drop, based on OwnCloud
  - **`B2Drop(username, password)`** - Constructor
  - **`changeFolderSetting (folderUri, folderID, setting, callback)`** - Change folder setting (only change 1 setting for each call)
  - **`checkIfFolderExits (folderPath, callbakc) `** - Check if a folder exits in provided path
- - **`createFolder (folderUri, callback)`** - Create folder in folderUri
+ - **`createFolder (folderUri, callback)`** - Create folder in folderUri (if the path does not exists it will try to create the folders to recreate the path)
  - **`delete(fileUri, callback)`** - Delete file at fileUri
  - **`deleteFolder (folderUri, callback)`** - Delete folder in folderUri
  - **`get(fileUri, outputStream, callback)`** - Get file from fileUri
