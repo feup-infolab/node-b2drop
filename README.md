@@ -44,17 +44,20 @@ NodeJS client for B2Drop, based on OwnCloud
    ![workflow B2drop extra funcs](resources/flow3.png "B2drop request")
    
    ##### Methods
- - **`login(callback) `** - Login B2Drop service
- - **`logout(callback)`** - Logout B2Drop service 
- - **`put(fileUri, inputStream, callback)`** - Upload file to fileUri
- - **`get(fileUri, callback)`** - Get file from fileUri
- - **`delete(fileUri, callback)`** - Delete file at fileUri
- - **`createFolder (folderUri, callback)`** - Create folder in folderUri
- - **`deleteFolder (folderUri, callback)`** - Delete folder in folderUri
+ - **`B2Drop(username, password)`** - Constructor
  - **`changeFolderSetting (folderUri, folderID, setting, callback)`** - Change folder setting (only change 1 setting for each call)
- - **`getDirectoryContents  (folderPath, callback)`** - List folder content 
- - **`getShareLink(folderUri, password, callback)`** - Create and get share link and set folder to editable and folder password  
-   
+ - **`checkIfFolderExits (folderPath, callbakc) `** - Check if a folder exits in provided path
+ - **`createFolder (folderUri, callback)`** - Create folder in folderUri
+ - **`delete(fileUri, callback)`** - Delete file at fileUri
+ - **`deleteFolder (folderUri, callback)`** - Delete folder in folderUri
+ - **`get(fileUri, outputStream, callback)`** - Get file from fileUri
+ - **`getAuthToken (callback)`** - get Authentication Token form B2drop website 
+ - **`getDirectoryContents (folderPath, callback)`** - List folder content 
+ - **`getQuota (callback) `** - Get available and used space in the cloud
+ - **`getShareLink (folderUri, password, callback)`** - Create and get share link and set folder to editable and folder password  
+ - **`put(fileUri, inputStream, callback)`** - Upload file to fileUri
+ - **`testConnection (callback) `**- Simple test to check if username and password are valid
+ 
  ### B2DropShare
    
    B2DropShare is responsible for all operations related to users shared area, only uses WebDav.
@@ -67,44 +70,43 @@ NodeJS client for B2Drop, based on OwnCloud
   ![workflow B2drop WebDav](resources/flow4.jpg "B2drop WebDav")
    
    #### Methods
-  
- - **`put(fileUri, inputStream, callback)`** - Upload file to fileUri
- - **`get(fileUri, callback)`** - Get file from fileUri
- - **`delete(fileUri, callback)`** - Delete file at fileUri
+ - **`B2DropShare ( sharelink, password)`** - Constructor
  - **`createFolder(folderUri, callback)`** - Create folder in folderUri
+ - **`checkIfFolderExits ( folderPath, callback)`**- Check if folder exists in provided path
+ - **`delete(fileUri, callback)`** - Delete file at fileUri
  - **`deleteFolder(folderUri, callback)`** - Delete folder in folderUri
+ - **`put(fileUri, inputStream, callback)`** - Upload file to fileUri
+ - **`get(fileUri, outputStream, callback)`** - Get file from fileUri
  - **`getDirectoryContents(folderPath, callback)`** - List folder content
     
 ## Examples
- #### Login
+ #### Create Share Link
    ```js
         const b2drop = require('node-b2drop').B2Drop;
         
         var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
-                    account.login(function (err, response) {
-                            if(response && response.statusCode === 200) {
-                                console.log("Logged in");
-                            }
-                        });
-                    });
+            account.getShareLink(testPathFolder1, passwordFolder, function (err, response, shareLink)
+            {
+                console.log(shareLink);
+            };
+});
    ```
   #### Upload File 
    ```js
          const b2drop = require('node-b2drop').B2Drop;
-           
-         var fileUri = "/" + testFile.name;
+        
+         var fileUri;
          var inputStream = fs.createReadStream(testFile.location);
-   
-             inputStream.on('open', function () {
-                  var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
-                  account.put(fileUri, inputStream, function (err) {
-                        if(err) {
-                            console.log("failed to upload");
-                        } else {
-                            console.log("file uploaded");
-                        }
-                     });
-                  });
+
+         inputStream.on("open", function ()
+            {
+                var account = new b2drop(b2dropAccount.username, b2dropAccount.password);
+                account.put(fileUri, inputStream, function (err)
+                {
+                  console.log(err);
+                });
+           }
+});
       ```
    
 ## Test
